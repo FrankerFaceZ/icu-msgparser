@@ -1,7 +1,9 @@
 # @ffz/icu-msgparser
 
 [![NPM Version](https://img.shields.io/npm/v/@ffz/icu-msgparser.svg?style=flat)](https://npmjs.org/package/@ffz/icu-msgparser)
-[![Dependency Status](https://img.shields.io/circleci/project/github/FrankerFaceZ/icu-msgparser.svg?style=flat)](https://circleci.com/gh/frankerfacez/icu-msgparser)
+[![Build Status](https://img.shields.io/circleci/project/github/FrankerFaceZ/icu-msgparser.svg?style=flat)](https://circleci.com/gh/frankerfacez/icu-msgparser)
+[![Dependency Status](https://img.shields.io/david/frankerfacez/icu-msgparser.svg?style=flat)](https://david-dm.org/frankerfacez/icu-msgparser)
+[![Test Coverage](https://coveralls.io/repos/github/FrankerFaceZ/icu-msgparser/badge.svg?branch=master)](https://coveralls.io/github/FrankerFaceZ/icu-msgparser?branch=master)
 
 A simple JavaScript parser for the [ICU Message Format](http://userguide.icu-project.org/formatparse/messages).
 
