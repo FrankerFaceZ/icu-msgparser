@@ -1,6 +1,6 @@
 {
 	"name": "@ffz/icu-msgparser",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "A tiny, basic parser for ICU MessageFormat strings that generates a basic AST.",
 	"author": "SirStendec <sir@stendec.me>",
 	"repository": {
