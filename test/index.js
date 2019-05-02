@@ -23,8 +23,8 @@ describe('Parser', function() {
 
 		it('takes options', function() {
 			const thing = Parser({
-				VAR_OPEN: '<',
-				VAR_CLOSE: '>'
+				OPEN: '<',
+				CLOSE: '>'
 			});
 			expect(thing.parse('Hello, <name>!')).to.deep.equal([
 				'Hello, ',
@@ -143,6 +143,10 @@ describe('Parser', function() {
 		})
 
 		it('does not escape sometimes', function() {
+			expect(parse("So, '{Mike''s Test}' is real.")).to.deep.equal([
+				"So, {Mike's Test} is real."
+			])
+
 			expect(parse("You've done it now, {name}.")).to.deep.equal([
 				"You've done it now, ",
 				{v: 'name'},
