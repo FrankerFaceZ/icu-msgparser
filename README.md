@@ -9,6 +9,7 @@ A simple JavaScript parser for the [ICU Message Format](http://userguide.icu-pro
 
 -   Approximately 6,500 Bytes Uncompressed
 -   1 Kilobyte, Minified and Gzipped
+-   Decently Fast
 -   Only does what it needs to.
 -   No really, this doesn't include anything weird like XML tags or non-standard
     escaping or free piña coladas.
@@ -129,6 +130,52 @@ const ast = parser.parse(message);
 ## Make Sure It Still Works
 
 Run tests using `npm test`.
+
+
+## Do Stuff Quick
+
+We now include a benchmark taken from `intl-messageformat-parser` for the
+purpose of comparing performance. Please note that, while performing
+essentially the same task, `intl-messageformat-parser` produces an AST
+with a different syntax than this project. The `intl-messageformat-parser`
+project also has special handling for custom date format strings while
+this project intends for custom format strings to be handled by whichever
+library is responsible for consuming the AST.
+
+Run the benchmark yourself with `npm run benchmark`.
+
+Results when run on an i7-4770k running at 3.5 GHz with 24GB of DDR3-1600:
+
+```
+> @ffz/icu-msgparser@1.0.2 benchmark
+> node ./benchmark.js
+
+complex_msg AST length 1166
+normal_msg AST length 176
+simple_msg AST length 28
+string_msg AST length 17
+complex_msg x 26,836 ops/sec ±1.89% (89 runs sampled)
+normal_msg x 193,392 ops/sec ±0.96% (92 runs sampled)
+simple_msg x 2,185,362 ops/sec ±1.09% (92 runs sampled)
+string_msg x 4,394,321 ops/sec ±1.42% (93 runs sampled)
+```
+
+In comparison, the following are results taken from the same machine
+benchmarking `intl-messageformat-parser`:
+
+```
+> intl-messageformat-parser@3.5.0 benchmark
+> node ./benchmark.js
+
+complex_msg AST length 2176
+normal_msg AST length 400
+simple_msg AST length 79
+string_msg AST length 36
+complex_msg x 4,191 ops/sec ±1.65% (90 runs sampled)
+normal_msg x 35,364 ops/sec ±1.31% (89 runs sampled)
+simple_msg x 171,065 ops/sec ±0.54% (94 runs sampled)
+string_msg x 187,480 ops/sec ±0.52% (92 runs sampled)
+```
 
 
 ## Contribute the Stuff
