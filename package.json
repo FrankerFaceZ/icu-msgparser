@@ -15,6 +15,7 @@
 		"messageformat"
 	],
 	"main": "lib/parser.js",
+	"types": "types/parser.d.ts",
 	"files": [
 		"lib"
 	],
