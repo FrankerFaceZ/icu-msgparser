@@ -7,12 +7,9 @@
 
 A simple JavaScript parser for the [ICU Message Format](http://userguide.icu-project.org/formatparse/messages).
 
--   Approximately 6,500 Bytes Uncompressed
--   1 Kilobyte, Minified and Gzipped
+-   Under 2 Kilobytes, Minified and Gzipped
 -   Decently Fast
 -   Only does what it needs to.
--   No really, this doesn't include anything weird like XML tags or non-standard
-    escaping or free piña coladas.
 
 
 ## Include the Thing
@@ -26,7 +23,7 @@ import Parser from '@ffz/icu-msgparser';
 
 ```javascript
 const parser = new Parser(),
-    ast = parser.parse(`Hello, {name}! You have {messages, plural,
+    ast = parser.parse(`Hello, <b>{name}</b>! You have {messages, plural,
     =0 {no messages}
     one {one message}
     other {# messages}
@@ -39,7 +36,12 @@ const parser = new Parser(),
 ```javascript
 [
     "Hello, ",
-    {"v": "name"},
+    {
+        "n": "b",
+        "c": [
+            {"v": "name"}
+        ]
+    },
     "! You have ",
     {
         "v": "messages",
@@ -74,24 +76,39 @@ SyntaxError: expected , or } at position 12 but found {
 
 ## Interpret the AST
 
-```
-ast = node[]
-node = string | placeholder
+```typescript
+type ast = node[];
+type node = string | placeholder;
 
-placeholder = {
-    v: string,
-    t: ?string,
-    f: ?string | ?number,
-    o: ?submessages
+type placeholder = tag | variable;
+
+type tag = {
+    n: string;
+    c?: ast;
+};
+
+type variable = {
+    v: string;
+    t?: string;
+    f?: string | number;
+    o?: submessages;
 }
 
-submessages = {
-    [string]: ast
-}
+type submessages = {
+    [rule: string]: ast;
+};
 ```
 
-All placeholders will have a `v`, or value, which tells the interpreter what
-value to use for them. `t`, or type, is only included for placeholders with
+Strings are just strings.
+
+Placeholders can be tags or variables.
+
+All tags will have a `n`, or name, which tells the interpreter what tag
+handler to use for them. `c`, or children, is only included for a tag with
+contents.
+
+All variables will have a `v`, or value, which tells the interpreter what
+value to use for them. `t`, or type, is only included for variables with
 types given. This would be `plural`, `number`, etc.
 
 `f` is the optionally provided format. For `plural`, `selectordinal`, as well
@@ -99,7 +116,7 @@ as any custom types that use offset numbers, `f` will be the offset number
 if provided.
 
 Finally, `o` is an object with containing all the parsed sub-messages for a
-placeholder with sub-messages.
+variables with sub-messages.
 
 
 ## Know the API
@@ -112,6 +129,9 @@ const parser = new Parser(/* options: */ {
     SEP: ',',
     ESCAPE: "'",
     SUB_VAR: '#',
+    TAG_OPEN: '<',
+    TAG_CLOSE: '>',
+    TAG_CLOSING: '/',
 
     // Offset
     OFFSET: 'offset:',
@@ -120,7 +140,10 @@ const parser = new Parser(/* options: */ {
     subnumeric_types: ['plural', 'selectordinal'],
 
     // Types that support sub-messages:
-    submessage_types: ['plural', 'selectordinal', 'select']
+    submessage_types: ['plural', 'selectordinal', 'select'],
+
+    // Config Flags
+    allowTags: true
 });
 
 const ast = parser.parse(message);
@@ -130,52 +153,6 @@ const ast = parser.parse(message);
 ## Make Sure It Still Works
 
 Run tests using `npm test`.
-
-
-## Do Stuff Quick
-
-We now include a benchmark taken from `intl-messageformat-parser` for the
-purpose of comparing performance. Please note that, while performing
-essentially the same task, `intl-messageformat-parser` produces an AST
-with a different syntax than this project. The `intl-messageformat-parser`
-project also has special handling for custom date format strings while
-this project intends for custom format strings to be handled by whichever
-library is responsible for consuming the AST.
-
-Run the benchmark yourself with `npm run benchmark`.
-
-Results when run on an i7-4770k running at 3.5 GHz with 24GB of DDR3-1600:
-
-```
-> @ffz/icu-msgparser@1.0.2 benchmark
-> node ./benchmark.js
-
-complex_msg AST length 1166
-normal_msg AST length 176
-simple_msg AST length 28
-string_msg AST length 17
-complex_msg x 26,836 ops/sec ±1.89% (89 runs sampled)
-normal_msg x 193,392 ops/sec ±0.96% (92 runs sampled)
-simple_msg x 2,185,362 ops/sec ±1.09% (92 runs sampled)
-string_msg x 4,394,321 ops/sec ±1.42% (93 runs sampled)
-```
-
-In comparison, the following are results taken from the same machine
-benchmarking `intl-messageformat-parser`:
-
-```
-> intl-messageformat-parser@3.5.0 benchmark
-> node ./benchmark.js
-
-complex_msg AST length 2176
-normal_msg AST length 400
-simple_msg AST length 79
-string_msg AST length 36
-complex_msg x 4,191 ops/sec ±1.65% (90 runs sampled)
-normal_msg x 35,364 ops/sec ±1.31% (89 runs sampled)
-simple_msg x 171,065 ops/sec ±0.54% (94 runs sampled)
-string_msg x 187,480 ops/sec ±0.52% (92 runs sampled)
-```
 
 
 ## Contribute the Stuff
