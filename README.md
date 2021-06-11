@@ -19,7 +19,7 @@ import Parser from '@ffz/icu-msgparser';
 ```
 
 
-## Do the Stuff
+## Parse the Stuff...
 
 ```javascript
 const parser = new Parser(),
@@ -28,45 +28,40 @@ const parser = new Parser(),
     one {one message}
     other {# messages}
 } and you're {completion, number, percentage} done.`);
-```
 
-
-## Get the AST
-
-```javascript
-[
+ast === [
     "Hello, ",
     {
-        "n": "b",
-        "c": [
-            {"v": "name"}
+        n: "b",
+        c: [
+            {v: "name"}
         ]
     },
     "! You have ",
     {
-        "v": "messages",
-        "t": "plural",
-        "o": {
+        v: "messages",
+        t: "plural",
+        o: {
             "=0": ["no messages"],
-            "one": ["one message"],
-            "other": [
-                {"v": "messages"},
+            one: ["one message"],
+            other: [
+                {v: "messages", t: "number"},
                 " messages"
             ]
         }
     },
     " and you're ",
     {
-        "v": "completion",
-        "t": "number",
-        "f": "percentage"
+        v: "completion",
+        t: "number",
+        f: "percentage"
     },
     " done."
 ]
 ```
 
 
-## Make the Oops?
+## Make Mistakes?
 
 ```javascript
 > parser.parse('Hello, {name{!');
@@ -77,25 +72,49 @@ SyntaxError: expected , or } at position 12 but found {
 ## Interpret the AST
 
 ```typescript
-type ast = node[];
-type node = string | placeholder;
+// ASTs are a simple array of strings and placeholder objects.
+type MessageAST = MessageNode[];
+type MessageNode = string | MessagePlaceholder;
 
-type placeholder = tag | variable;
+// Placeholder objects are either tags or variables.
+type MessagePlaceholder = MessageTag | MessageVariable;
 
-type tag = {
+
+type MessageTag = {
+    // The name of the tag. For `<link>` this would be `link`.
     n: string;
-    c?: ast;
+
+    // If the tag has children, the child AST will be stored in this
+    // variable. Otherwise, it will be undefined.
+    c?: MessageAST;
 };
 
-type variable = {
+
+type MessageVariable = {
+    // n is never defined on variables and can be used to discriminate
+    // between variables and tags.
+    n: undefined;
+
+    // The name of the variable. For `{count,number}` this would be `count`.
     v: string;
+
+    // The type of the variable, if a type is included. Given the example
+    // `{count,number}` this would be `number`.
     t?: string;
+
+    // The format of the variable, if a format is included. Given the example
+    // `{count,number,::currency/USD}` this would be `::currency/USD`.
+    // For subnumeric types, this will be the `offset:` if one was provided
+    // and the type will be a number.
     f?: string | number;
-    o?: submessages;
+
+    // For submessage types, this will contain all of the separate submessage
+    // ASTs, with their rules as unprocessed strings.
+    o?: MessageSubmessages;
 }
 
-type submessages = {
-    [rule: string]: ast;
+type MessageSubmessages = {
+    [rule: string]: MessageAST;
 };
 ```
 
@@ -104,7 +123,7 @@ Strings are just strings.
 Placeholders can be tags or variables.
 
 All tags will have a `n`, or name, which tells the interpreter what tag
-handler to use for them. `c`, or children, is only included for a tag with
+handler to use for them. `c`, or children/content, is only included for a tag with
 contents.
 
 All variables will have a `v`, or value, which tells the interpreter what
@@ -143,11 +162,21 @@ const parser = new Parser(/* options: */ {
     submessage_types: ['plural', 'selectordinal', 'select'],
 
     // Config Flags
-    allowTags: true
+    allowTags: true,
+    requireOther: true,
+    // or
+    requireOther: ['select']
 });
 
 const ast = parser.parse(message);
 ```
+
+Tags can be completely disabled by setting `allowTags` to `false`.
+
+By default, types with submessages are required to have an `other` type. You
+can set `requireOther` to `false` to disable this behavior entirely, or set
+it to an array of specific types that should require `other` while all other
+types should not.
 
 
 ## Make Sure It Still Works

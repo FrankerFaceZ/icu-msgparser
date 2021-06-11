@@ -79,6 +79,36 @@ describe('Parser', function() {
 			])
 		})
 
+		it('requires other', function() {
+			expect(() => parse('{test,plural,one{}}')).to.throw(SyntaxError, 'expected other sub-message');
+		});
+
+		it('sometimes requires other', function() {
+			const thing = Parser({requireOther: ['select']});
+
+			expect(thing.parse('{test,plural,one{}}')).to.deep.equal([
+				{
+					v: 'test',
+					t: 'plural',
+					o: {
+						'one': []
+					}
+				}
+			]);
+
+			expect(() => thing.parse('{test,select,one{}}')).to.throw(SyntaxError, 'expected other sub-message');
+
+			expect(Parser({requireOther: false}).parse('{test,plural,one{}}')).to.deep.equal([
+				{
+					v: 'test',
+					t: 'plural',
+					o: {
+						'one': []
+					}
+				}
+			]);
+		});
+
 		it('parses plural tags', function() {
 			expect(parse('{test, plural, one{one test} other {# test} }')).to.deep.equal([
 				{
@@ -222,6 +252,7 @@ describe('Parser', function() {
 			expect(() => parse('{n')).to.throw(SyntaxError, 'expected , or }')
 			expect(() => parse('{n,number')).to.throw(SyntaxError, 'expected , or }')
 			expect(() => parse('{n,number,short')).to.throw(SyntaxError, 'expected }')
+			expect(() => parse('({n,plural,other{# test}')).to.throw(SyntaxError, 'expected }');
 		})
 
 		it('throws on open brace in variable', function() {

@@ -32,6 +32,7 @@ declare module '@ffz/icu-msgparser' {
 		subnumeric_types?: string[];
 		submessage_types?: string[];
 		allowTags?: boolean;
+		requireOther?: boolean | string[];
 	};
 
 	export type MessageAST = (string | MessagePlaceholder)[];
